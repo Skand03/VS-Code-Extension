@@ -126,6 +126,8 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     constructor(extensionUri: vscode.Uri, extensionContext?: vscode.ExtensionContext) {
         this.extensionUri = extensionUri;
         this.extensionContext = extensionContext;
+        // FIX: Load UI language from configuration at construction time
+        this.currentUiLanguage = getUiLanguageConfig();
     }
 
     /**
