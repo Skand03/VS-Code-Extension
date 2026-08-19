@@ -1,22 +1,54 @@
 {
   "name": "chaubey-ji",
   "displayName": "Chaubey Ji",
-  "description": "Chaubey Ji — an AI coding assistant for VS Code with code analysis, chat, debugging, code conversion, documentation, testing, and multi-provider AI support.",
-  "version": "2.0.0",
+  "description": "Chaubey Ji is an AI coding assistant for VS Code with code analysis, debugging, chat, code conversion, documentation, testing, and multi-provider AI support including local Ollama models.",
+  "version": "1.0.0",
   "publisher": "ChaubeyJi",
   "icon": "resources/icon.png",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Skand03/VS-Code-Extension.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Skand03/VS-Code-Extension/issues"
+  },
+  "homepage": "https://github.com/Skand03/VS-Code-Extension#readme",
+
   "engines": {
     "vscode": "^1.85.0"
   },
+
   "categories": [
     "Programming Languages",
     "Machine Learning",
     "Other"
   ],
+
+  "keywords": [
+    "ai",
+    "artificial intelligence",
+    "coding assistant",
+    "code analysis",
+    "debugging",
+    "code generation",
+    "ollama",
+    "local ai",
+    "gemini",
+    "openai",
+    "deepseek",
+    "groq",
+    "perplexity",
+    "openrouter",
+    "cerebras"
+  ],
+
   "activationEvents": [
     "onStartupFinished"
   ],
+
   "main": "./out/extension.js",
+
   "contributes": {
     "configuration": {
       "title": "AI Assistant",
@@ -29,23 +61,29 @@
             "gemini",
             "openai",
             "deepseek",
-            "together",
+            "perplexity",
+            "cerebras",
+            "openrouter",
             "localhost"
           ],
           "enumDescriptions": [
-            "Groq - Fast, free AI inference",
-            "Google Gemini - Google AI models with advanced reasoning",
-            "OpenAI - GPT-4, GPT-4o, and reasoning models",
-            "DeepSeek - Advanced reasoning models with 1M context",
-            "Together AI - 100+ open-source models",
-            "Localhost - Local LM Studio, Ollama, or llama.cpp server"
+            "Groq - Fast AI inference",
+            "Google Gemini - Google AI models",
+            "OpenAI - GPT models and advanced AI",
+            "DeepSeek - Advanced reasoning models",
+            "Perplexity - AI search and reasoning models",
+            "Cerebras - Ultra-fast AI inference",
+            "OpenRouter - Access to multiple AI models",
+            "Localhost - Local Ollama, LM Studio, or llama.cpp server"
           ],
-          "description": "AI provider to use (e.g., groq, gemini, openai, deepseek, together, localhost)."
+          "description": "AI provider to use."
         },
+
         "aiAssistant.model": {
           "type": "string",
-          "description": "Model to use with the selected provider. Each provider has its own model list."
+          "description": "Model to use with the selected AI provider. Each provider has its own model list."
         },
+
         "aiAssistant.uiLanguage": {
           "type": "string",
           "default": "en",
@@ -79,6 +117,7 @@
         }
       }
     },
+
     "commands": [
       {
         "command": "aiAssistant.analyzeCode",
@@ -156,6 +195,7 @@
         "category": "AI Assistant"
       }
     ],
+
     "menus": {
       "commandPalette": [
         {
@@ -217,6 +257,7 @@
           "when": "editorHasSelection"
         }
       ],
+
       "editor/context": [
         {
           "submenu": "aiAssistant.submenu",
@@ -224,6 +265,7 @@
           "group": "aiAssistant@1"
         }
       ],
+
       "aiAssistant.submenu": [
         {
           "command": "aiAssistant.analyzeCode",
@@ -239,7 +281,7 @@
         },
         {
           "command": "aiAssistant.debugAndFix",
-          "group": "1_primary@3"
+          "group": "1_primary@4"
         },
         {
           "command": "aiAssistant.summarize",
@@ -279,12 +321,14 @@
         }
       ]
     },
+
     "submenus": [
       {
         "id": "aiAssistant.submenu",
         "label": "AI Assistant"
       }
     ],
+
     "viewsContainers": {
       "activitybar": [
         {
@@ -294,6 +338,7 @@
         }
       ]
     },
+
     "views": {
       "aiAssistant": [
         {
@@ -305,6 +350,7 @@
       ]
     }
   },
+
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
@@ -313,6 +359,7 @@
     "lint": "eslint src --ext ts",
     "test": "node ./out/test/runTest.js"
   },
+
   "devDependencies": {
     "@types/dompurify": "^3.0.5",
     "@types/jsdom": "^30.0.0",
@@ -324,6 +371,7 @@
     "eslint": "^8.x",
     "typescript": "^5.3.0"
   },
+
   "dependencies": {
     "dompurify": "^3.4.13",
     "jsdom": "^29.1.1",
