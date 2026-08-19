@@ -1,0 +1,332 @@
+{
+  "name": "chaubey-ji",
+  "displayName": "Chaubey Ji",
+  "description": "Chaubey Ji — an AI coding assistant for VS Code with code analysis, chat, debugging, code conversion, documentation, testing, and multi-provider AI support.",
+  "version": "2.0.0",
+  "publisher": "ChaubeyJi",
+  "icon": "resources/icon.png",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Machine Learning",
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "AI Assistant",
+      "properties": {
+        "aiAssistant.provider": {
+          "type": "string",
+          "default": "groq",
+          "enum": [
+            "groq",
+            "gemini",
+            "openai",
+            "deepseek",
+            "together",
+            "localhost"
+          ],
+          "enumDescriptions": [
+            "Groq - Fast, free AI inference",
+            "Google Gemini - Google AI models with advanced reasoning",
+            "OpenAI - GPT-4, GPT-4o, and reasoning models",
+            "DeepSeek - Advanced reasoning models with 1M context",
+            "Together AI - 100+ open-source models",
+            "Localhost - Local LM Studio, Ollama, or llama.cpp server"
+          ],
+          "description": "AI provider to use (e.g., groq, gemini, openai, deepseek, together, localhost)."
+        },
+        "aiAssistant.model": {
+          "type": "string",
+          "description": "Model to use with the selected provider. Each provider has its own model list."
+        },
+        "aiAssistant.uiLanguage": {
+          "type": "string",
+          "default": "en",
+          "description": "UI language for the AI Assistant sidebar chat interface.",
+          "enum": [
+            "en",
+            "hi",
+            "bn",
+            "te",
+            "mr",
+            "ta",
+            "gu",
+            "kn",
+            "ml",
+            "pa",
+            "or"
+          ],
+          "enumDescriptions": [
+            "English",
+            "Hindi",
+            "Bengali",
+            "Telugu",
+            "Marathi",
+            "Tamil",
+            "Gujarati",
+            "Kannada",
+            "Malayalam",
+            "Punjabi",
+            "Odia"
+          ]
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "aiAssistant.analyzeCode",
+        "title": "Analyze Code",
+        "category": "AI Assistant"
+      },
+      {
+        "command": "aiAssistant.chatDiscussion",
+        "title": "Chat Discussion",
+        "category": "AI Assistant"
+      },
+      {
+        "command": "aiAssistant.explainCode",
+        "title": "Explain Code",
+        "category": "AI Assistant"
+      },
+      {
+        "command": "aiAssistant.debugAndFix",
+        "title": "Debug & Fix",
+        "category": "AI Assistant"
+      },
+      {
+        "command": "aiAssistant.summarize",
+        "title": "Summarize",
+        "category": "AI Assistant"
+      },
+      {
+        "command": "aiAssistant.convertCode",
+        "title": "Convert Code",
+        "category": "AI Assistant"
+      },
+      {
+        "command": "aiAssistant.generateDocs",
+        "title": "Generate Documentation",
+        "category": "AI Assistant"
+      },
+      {
+        "command": "aiAssistant.improveCode",
+        "title": "Improve Code",
+        "category": "AI Assistant"
+      },
+      {
+        "command": "aiAssistant.generateTests",
+        "title": "Generate Tests",
+        "category": "AI Assistant"
+      },
+      {
+        "command": "aiAssistant.grammarFixer",
+        "title": "Grammar Fixer",
+        "category": "AI Assistant"
+      },
+      {
+        "command": "aiAssistant.factCheck",
+        "title": "Fact Check",
+        "category": "AI Assistant"
+      },
+      {
+        "command": "aiAssistant.createFollowup",
+        "title": "Create Follow-up",
+        "category": "AI Assistant"
+      },
+      {
+        "command": "aiAssistant.letsTalkAboutThis",
+        "title": "Let's Talk About This",
+        "category": "AI Assistant"
+      },
+      {
+        "command": "aiAssistant.openSettings",
+        "title": "Open AI Assistant Settings",
+        "category": "AI Assistant"
+      },
+      {
+        "command": "aiAssistant.openSidebar",
+        "title": "Open AI Assistant Sidebar",
+        "category": "AI Assistant"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "aiAssistant.analyzeCode",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "aiAssistant.chatDiscussion",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "aiAssistant.openSettings"
+        },
+        {
+          "command": "aiAssistant.openSidebar"
+        },
+        {
+          "command": "aiAssistant.explainCode",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "aiAssistant.debugAndFix",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "aiAssistant.summarize",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "aiAssistant.convertCode",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "aiAssistant.generateDocs",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "aiAssistant.improveCode",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "aiAssistant.generateTests",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "aiAssistant.grammarFixer",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "aiAssistant.factCheck",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "aiAssistant.createFollowup",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "aiAssistant.letsTalkAboutThis",
+          "when": "editorHasSelection"
+        }
+      ],
+      "editor/context": [
+        {
+          "submenu": "aiAssistant.submenu",
+          "when": "editorHasSelection",
+          "group": "aiAssistant@1"
+        }
+      ],
+      "aiAssistant.submenu": [
+        {
+          "command": "aiAssistant.analyzeCode",
+          "group": "1_primary@1"
+        },
+        {
+          "command": "aiAssistant.chatDiscussion",
+          "group": "1_primary@2"
+        },
+        {
+          "command": "aiAssistant.explainCode",
+          "group": "1_primary@3"
+        },
+        {
+          "command": "aiAssistant.debugAndFix",
+          "group": "1_primary@3"
+        },
+        {
+          "command": "aiAssistant.summarize",
+          "group": "2_content@1"
+        },
+        {
+          "command": "aiAssistant.convertCode",
+          "group": "2_content@2"
+        },
+        {
+          "command": "aiAssistant.generateDocs",
+          "group": "3_generation@1"
+        },
+        {
+          "command": "aiAssistant.improveCode",
+          "group": "3_generation@2"
+        },
+        {
+          "command": "aiAssistant.generateTests",
+          "group": "3_generation@3"
+        },
+        {
+          "command": "aiAssistant.grammarFixer",
+          "group": "4_text@1"
+        },
+        {
+          "command": "aiAssistant.factCheck",
+          "group": "4_text@2"
+        },
+        {
+          "command": "aiAssistant.createFollowup",
+          "group": "5_other@1"
+        },
+        {
+          "command": "aiAssistant.letsTalkAboutThis",
+          "group": "5_other@2"
+        }
+      ]
+    },
+    "submenus": [
+      {
+        "id": "aiAssistant.submenu",
+        "label": "AI Assistant"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "aiAssistant",
+          "title": "AI Assistant",
+          "icon": "resources/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "aiAssistant": [
+        {
+          "type": "webview",
+          "id": "aiAssistant.sidebar",
+          "name": "AI Response",
+          "contextualTitle": "AI Assistant"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/dompurify": "^3.0.5",
+    "@types/jsdom": "^30.0.0",
+    "@types/marked": "^5.0.2",
+    "@types/node": "^20.x",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^6.x",
+    "@typescript-eslint/parser": "^6.x",
+    "eslint": "^8.x",
+    "typescript": "^5.3.0"
+  },
+  "dependencies": {
+    "dompurify": "^3.4.13",
+    "jsdom": "^29.1.1",
+    "marked": "^18.0.10"
+  }
+}
