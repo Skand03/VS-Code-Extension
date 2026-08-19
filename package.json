@@ -1,9 +1,9 @@
 {
-  "name": "chaubey-ji",
-  "displayName": "Chaubey Ji",
-  "description": "Chaubey Ji is an AI coding assistant for VS Code with code analysis, debugging, chat, code conversion, documentation, testing, and multi-provider AI support including local Ollama models.",
-  "version": "2.0.0",
-  "publisher": "ChaubeyJi",
+  "name": "ksd-ai",
+  "displayName": "KSD AI",
+  "description": "KSD AI — an AI coding assistant for VS Code with code analysis, chat, debugging, code conversion, documentation, testing, and multi-provider AI support.",
+  "version": "1.0.1",
+  "publisher": "chaubeyji-ai",
   "icon": "resources/icon.png",
   "license": "MIT",
   "repository": {
