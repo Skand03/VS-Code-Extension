@@ -2,7 +2,7 @@
   "name": "chaubey-ji",
   "displayName": "Chaubey Ji",
   "description": "Chaubey Ji is an AI coding assistant for VS Code with code analysis, debugging, chat, code conversion, documentation, testing, and multi-provider AI support including local Ollama models.",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "publisher": "ChaubeyJi",
   "icon": "resources/icon.png",
   "license": "MIT",
