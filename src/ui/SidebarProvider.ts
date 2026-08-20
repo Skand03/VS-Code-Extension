@@ -1776,62 +1776,126 @@ ${this.buildBodyHtml(state, langCode)}
         if (ttsOn) { window.speechSynthesis.cancel(); ttsOn = false; updateListenBtn(); return; }
         var el = document.getElementById('resp-text');
         if (!el) return;
-        
-        // Clone to remove code blocks before reading
+
+        // Clone and strip code blocks so they are not read aloud
         var clone = el.cloneNode(true);
         var codeBlocks = clone.querySelectorAll('.code-block');
         for (var i = 0; i < codeBlocks.length; i++) {
             codeBlocks[i].parentNode.removeChild(codeBlocks[i]);
         }
-        
+
         var text = clone.innerText || clone.textContent || '';
         if (!text.trim()) return;
-        
-        var clean = text.replace(/[*#_\`]/g, '');
-        var utt = new SpeechSynthesisUtterance(clean);
+
+        // Strip markdown symbols but keep the readable text intact
+        var clean = text.replace(/[*#_\`]/g, '').trim();
         var lc = LANG_VOICE[lang] || 'en-US';
-        utt.lang = lc;
-        
-        var vs = window.speechSynthesis.getVoices ? window.speechSynthesis.getVoices() : [];
-        var matchVoice = null;
-        var fallbackVoice = null;
-        var langPrefix = lc.split('-')[0];
-        // First pass: find female voice matching language
-        for (var j = 0; j < vs.length; j++) {
-            if (vs[j].lang && vs[j].lang.startsWith(langPrefix)) {
-                var name = vs[j].name.toLowerCase();
-                // Common female voice identifiers across platforms
-                var femaleKeywords = ['female', 'woman', 'girl', 'zira', 'samantha', 'victoria', 'alice', 'fiona', 'karen', 'moira', 'tessa', 'veena', 'google हिन्दी', 'microsoft heera', 'lekha', 'shruti', 'kyoko', 'siri female'];
-                var isFemale = femaleKeywords.some(function(kw){ return name.indexOf(kw) > -1; });
-                if (isFemale) {
-                    matchVoice = vs[j];
-                    break;
-                }
-                // Store as fallback if we haven't found a female voice yet
-                if (!fallbackVoice) fallbackVoice = vs[j];
+
+        // getVoices() is async in Chromium/Electron — voices may be empty on
+        // first call. We wait for voiceschanged if needed, then speak.
+        function speakWithVoices(voices) {
+            var utt = new SpeechSynthesisUtterance(clean);
+            utt.lang = lc;
+
+            // Pick best voice: prefer a voice that matches the language.
+            // IMPORTANT: only assign utt.voice if it matches the target language.
+            // Assigning a mismatched voice (e.g. English) overrides utt.lang
+            // and causes English speech even for Hindi/Gujarati text.
+            var langPrefix = lc.split('-')[0];
+            var bestVoice = null;
+
+            // Pass 1: exact locale match (e.g. hi-IN for Hindi)
+            for (var i = 0; i < voices.length; i++) {
+                if (voices[i].lang === lc) { bestVoice = voices[i]; break; }
             }
-        }
-        // If no female voice found, try any available female voice (any language)
-        if (!matchVoice) {
-            for (var k = 0; k < vs.length; k++) {
-                var nm = vs[k].name.toLowerCase();
-                var femKeywords = ['female', 'woman', 'girl', 'zira', 'samantha', 'victoria'];
-                var isFem = femKeywords.some(function(kw){ return nm.indexOf(kw) > -1; });
-                if (isFem) {
-                    matchVoice = vs[k];
-                    break;
+            // Pass 2: language prefix match (e.g. 'hi' for any hi-* voice)
+            if (!bestVoice) {
+                for (var j = 0; j < voices.length; j++) {
+                    if (voices[j].lang && voices[j].lang.startsWith(langPrefix)) {
+                        bestVoice = voices[j]; break;
+                    }
                 }
             }
+            // Pass 3: Google/Microsoft named voice for the language (some
+            // systems list voices without a proper lang tag)
+            if (!bestVoice) {
+                var langNames = {
+                    'hi': ['hindi', 'heera', 'hemant'],
+                    'gu': ['gujarati'],
+                    'mr': ['marathi', 'kalpana'],
+                    'bn': ['bengali', 'bangla'],
+                    'te': ['telugu'],
+                    'ta': ['tamil', 'valluvar'],
+                    'kn': ['kannada'],
+                    'ml': ['malayalam'],
+                    'pa': ['punjabi', 'gurpreet'],
+                    'or': ['odia', 'oriya']
+                };
+                var keywords = langNames[langPrefix] || [];
+                if (keywords.length > 0) {
+                    for (var k = 0; k < voices.length; k++) {
+                        var vname = voices[k].name.toLowerCase();
+                        for (var m = 0; m < keywords.length; m++) {
+                            if (vname.indexOf(keywords[m]) > -1) {
+                                bestVoice = voices[k]; break;
+                            }
+                        }
+                        if (bestVoice) break;
+                    }
+                }
+            }
+            // Only assign voice if it actually matches the target language.
+            // If nothing matched, leave utt.voice unset — the browser will
+            // use its default voice for utt.lang, which is correct behaviour.
+            if (bestVoice) {
+                utt.voice = bestVoice;
+            }
+            // If no matching voice was found at all AND this is a non-English
+            // language, show a gentle warning so the user knows why it may
+            // sound odd (browser may fall back to English TTS).
+            if (!bestVoice && langPrefix !== 'en') {
+                console.warn('[KSD AI TTS] No voice found for lang=' + lc + '. Browser will use default fallback. Install ' + lc + ' language pack in your OS for native speech.');
+            }
+
+            utt.rate = 1.0;
+            utt.pitch = 1.0;
+            utt.onend = function() { ttsOn = false; updateListenBtn(); };
+            utt.onerror = function(e) {
+                ttsOn = false;
+                updateListenBtn();
+                console.warn('[KSD AI TTS] Speech error:', e.error, 'lang=', lc);
+            };
+            ttsOn = true;
+            window.speechSynthesis.speak(utt);
+            updateListenBtn();
         }
-        // Use matched female voice, or fallback, or system default
-        if (matchVoice) utt.voice = matchVoice;
-        else if (fallbackVoice) utt.voice = fallbackVoice;
-        
-        utt.onend = function(){ ttsOn = false; updateListenBtn(); };
-        utt.onerror = function(){ ttsOn = false; updateListenBtn(); };
-        ttsOn = true;
-        window.speechSynthesis.speak(utt);
-        updateListenBtn();
+
+        // Voices may already be loaded (subsequent calls) or need async load
+        var voices = window.speechSynthesis.getVoices();
+        if (voices && voices.length > 0) {
+            speakWithVoices(voices);
+        } else {
+            // First call in Chromium: voices load asynchronously.
+            // Listen for voiceschanged, then speak. Timeout fallback if event
+            // never fires (some browsers don't fire it).
+            var fired = false;
+            var onVoicesChanged = function() {
+                if (fired) return;
+                fired = true;
+                window.speechSynthesis.removeEventListener('voiceschanged', onVoicesChanged);
+                speakWithVoices(window.speechSynthesis.getVoices());
+            };
+            window.speechSynthesis.addEventListener('voiceschanged', onVoicesChanged);
+            // Fallback: if voiceschanged never fires within 800ms, speak anyway
+            // (browser will pick its own voice for the language)
+            setTimeout(function() {
+                if (!fired) {
+                    fired = true;
+                    window.speechSynthesis.removeEventListener('voiceschanged', onVoicesChanged);
+                    speakWithVoices(window.speechSynthesis.getVoices());
+                }
+            }, 800);
+        }
     }
 
     function updateListenBtn() {
