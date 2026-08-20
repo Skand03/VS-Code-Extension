@@ -512,7 +512,6 @@ export class SettingsViewProvider {
     </div>
 
     <div class="container">
-        <div id="message" class="message"></div>
 
         <!-- Provider Selection -->
         <div class="card">
@@ -583,6 +582,9 @@ export class SettingsViewProvider {
                 </div>
             </div>
         </div>
+
+        <!-- Status Message (shown below all cards, above action buttons) -->
+        <div id="message" class="message"></div>
 
         <!-- Save & Test -->
         <div class="btn-group">
