@@ -114,6 +114,8 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     private stateGeneration: number = 0;
     private hasRevealed: boolean = false;
     private currentUiLanguage: string = 'en';
+    /** True while a background translation request is in flight. Prevents re-entrant translate calls. */
+    private _translating: boolean = false;
 
     /** Returns the user's currently selected UI language code (e.g. 'hi', 'en') */
     public getUiLanguage(): string { return this.currentUiLanguage; }
@@ -222,16 +224,30 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 
             case 'setUiLanguage': {
                 const code = String(message.code || 'en');
+                // Guard: ignore if already this language
+                if (code === this.currentUiLanguage) { break; }
+                // Guard: ignore if a translation is already in flight
+                if (this._translating) {
+                    logger.info('[UI DIAG] setUiLanguage ignored — translation already in flight');
+                    break;
+                }
                 this.currentUiLanguage = code;
                 try {
+                    // Persist FIRST so getUiLanguageConfig() returns the new value
+                    // immediately when updateView re-renders the HTML.
                     const cfg = vscode.workspace.getConfiguration('aiAssistant');
                     await cfg.update('uiLanguage', code, vscode.ConfigurationTarget.Global);
                     this.currentState.uiLanguage = code;
-                    // Re-render HTML with new language embedded
+                    // Re-render HTML with new language so dropdown shows correct selection
                     const g = ++this.stateGeneration;
                     this.updateView(this.currentState, g);
-                    // If we have an existing response, auto-translate in background
-                    if (this.currentState.status === 'success' && this.currentState.response && this.currentState.selection) {
+                    // Re-run the original AI request in the new language if a
+                    // response is currently displayed (analyze/explain/debug etc.)
+                    if (
+                        this.currentState.status === 'success' &&
+                        this.currentState.response &&
+                        this.currentState.selection
+                    ) {
                         this.translateExistingResponse(code);
                     }
                 } catch (err) {
@@ -944,10 +960,17 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
      * Copy text to clipboard
      */
     private async translateExistingResponse(targetLang: string): Promise<void> {
-        if (!this.currentState.response || this.currentState.status !== 'success' || !this.extensionContext) return;
-        
+        if (!this.currentState.response || this.currentState.status !== 'success' || !this.extensionContext) { return; }
+        // Re-entrant guard: only one translation in flight at a time
+        if (this._translating) { return; }
+        this._translating = true;
+
+        // Snapshot everything we need NOW before any await changes state
+        const snapshotResponse = this.currentState.response;
+        const snapshotSelection = this.currentState.selection;
         const previousAction = this.currentState.action;
-        
+        const previousState = { ...this.currentState };
+
         try {
             // Show loading spinner while translating
             this.currentState.status = 'loading';
@@ -956,38 +979,70 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
             this.updateView(this.currentState, gLoad);
 
             const aiService = new AIService(this.extensionContext);
-            const prompt = `Translate the following explanation/text completely into ${PromptService.getLanguageName(targetLang)} language.
-Keep all code blocks, code syntax, function names, and variable names in their original English programming format untouched.
-Translate all explanations, headings, bullet points, and descriptions into ${PromptService.getLanguageName(targetLang)}.
+            const langName = PromptService.getLanguageName(targetLang);
 
-Text to translate:
-${this.currentState.response}`;
+            // Build a strong, structured translation prompt using the snapshot
+            const prompt = [
+                `You are translating an AI code analysis result into ${langName}.`,
+                ``,
+                `RULES:`,
+                `1. Translate ALL explanatory prose, headings, bullet points, and descriptions into ${langName}.`,
+                `2. Keep ALL code blocks exactly as-is — do NOT translate code.`,
+                `3. Keep ALL inline code references in English (e.g. \`items[i].price\`, \`Array.reduce\`).`,
+                `4. Keep ALL variable names, function names, and keywords in English.`,
+                `5. Do NOT add comments in ${langName} inside code blocks.`,
+                `6. Preserve all markdown formatting (###, **, -, \`\`\`language blocks, etc.).`,
+                ``,
+                `CORRECT example output in ${langName === 'Hindi' ? 'Hindi' : langName}:`,
+                `"यह \`reduce()\` function \`items\` array को iterate करता है।"`,
+                ``,
+                `WRONG example:`,
+                `"यह रिड्यूस फंक्शन आइटम्स को iterate करता है।" ← Never translate code identifiers.`,
+                ``,
+                `TEXT TO TRANSLATE:`,
+                `---`,
+                snapshotResponse,
+                `---`,
+                ``,
+                `Now provide the full translated text in ${langName}, preserving all markdown and code blocks:`
+            ].join('\n');
 
             const resp = await aiService.generate({
                 prompt,
-                temperature: 0.3,
-                maxTokens: 2048
+                temperature: 0.2,
+                maxTokens: 4096
             });
 
-            if (resp && resp.content) {
+            // Check if the language was changed again while we were awaiting
+            // If so, discard this stale result — the newer request will arrive
+            if (this.currentUiLanguage !== targetLang) {
+                logger.info(`[UI DIAG] Translation for '${targetLang}' discarded — language changed to '${this.currentUiLanguage}' while in flight`);
+                return;
+            }
+
+            if (resp && resp.content && resp.content.trim().length > 0) {
                 const renderedHtml = this.renderMarkdownToSafeHtml(resp.content);
                 this.currentState.status = 'success';
                 this.currentState.action = previousAction;
                 this.currentState.response = resp.content;
+                this.currentState.uiLanguage = targetLang;
                 (this.currentState as any).responseHtml = renderedHtml;
                 const g = ++this.stateGeneration;
                 this.updateView(this.currentState, g);
+                logger.info(`[UI DIAG] Translation to '${targetLang}' complete, ${resp.content.length} chars`);
             } else {
-                throw new Error("Empty response");
+                throw new Error('Empty response from provider');
             }
         } catch (err: any) {
-            logger.warn(`[UI DIAG] Auto-translation skipped: ${err?.message || err}`);
-            vscode.window.showErrorMessage(`Translation failed: ${err?.message || 'Unknown error'}`);
-            // Revert state if translation failed
-            this.currentState.status = 'success';
-            this.currentState.action = previousAction;
+            logger.warn(`[UI DIAG] Translation failed: ${err?.message || err}`);
+            vscode.window.showErrorMessage(`Translation to ${PromptService.getLanguageName(targetLang)} failed: ${err?.message || 'Unknown error'}`);
+            // Restore previous success state cleanly
+            this.currentState = { ...previousState };
+            this.currentState.uiLanguage = targetLang; // keep the dropdown on the chosen lang
             const g = ++this.stateGeneration;
             this.updateView(this.currentState, g);
+        } finally {
+            this._translating = false;
         }
     }
 
