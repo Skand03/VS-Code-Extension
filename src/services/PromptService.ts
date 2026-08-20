@@ -38,24 +38,28 @@ export class PromptService {
      * Generate a prompt for the given action and selection
      */
     static generatePrompt(action: AIAction, selection: SelectionInfo, additionalContext?: string, targetLanguage?: string): string {
+        const langName = targetLanguage && targetLanguage !== 'en'
+            ? PromptService.getLanguageName(targetLanguage)
+            : '';
         const langDirective = targetLanguage && targetLanguage !== 'en'
-            ? `\n\n---\n**CRITICAL LANGUAGE INSTRUCTION - READ CAREFULLY:**\n\n` +
-              `1. Write ALL explanatory text and descriptions in ${PromptService.getLanguageName(targetLanguage)} language.\n` +
+            ? `\n\n---\n**CRITICAL LANGUAGE INSTRUCTION - YOU MUST FOLLOW THIS:**\n\n` +
+              `You MUST write your ENTIRE response in ${langName} language.\n` +
+              `Do NOT use Hindi. Do NOT use English for explanations. Use ONLY ${langName}.\n\n` +
+              `1. Write ALL explanatory text, headings, bullet points, and descriptions in ${langName}.\n` +
               `2. Keep ALL code identifiers in English - this includes:\n` +
               `   - Variable names: items, total, price, quantity, etc.\n` +
               `   - Function names: reduce, map, filter, Array.prototype.reduce, etc.\n` +
               `   - Keywords: null, undefined, NaN, true, false, etc.\n` +
               `   - Class names: Array, Object, String, Number, etc.\n` +
-              `   - Property names: .length, .price, .quantity, .size(), etc.\n` +
+              `   - Property names: .length, .price, .quantity, etc.\n` +
               `   - Method names: .push(), .pop(), .get(), .set(), etc.\n` +
-              `3. When mentioning code in explanations, wrap them in backticks (\`code\`) and keep in English.\n` +
-              `4. Do NOT translate inline code mentions like \`items[i].price\` or \`Array.prototype.reduce\`.\n` +
-              `5. Do NOT add ${PromptService.getLanguageName(targetLanguage)} comments inside code blocks.\n\n` +
-              `CORRECT EXAMPLE in ${PromptService.getLanguageName(targetLanguage)}:\n` +
-              `"यह function \`items\` array को iterate करता है और \`total\` calculate करता है।"\n\n` +
-              `WRONG EXAMPLE:\n` +
-              `"यह function आइटम्स array को iterate करता है और कुल calculate करता है।" (DON'T DO THIS!)\n\n` +
-              `Remember: Code identifiers = English. Explanation text = ${PromptService.getLanguageName(targetLanguage)}.`
+              `3. When mentioning code in explanations, wrap in backticks and keep in English.\n` +
+              `4. Do NOT translate inline code like \`items[i].price\` or \`Array.prototype.reduce\`.\n` +
+              `5. Do NOT write comments inside code blocks in ${langName}.\n` +
+              `6. Do NOT respond in Hindi unless the selected language IS Hindi.\n\n` +
+              `TARGET LANGUAGE: ${langName}\n` +
+              `RESPOND IN: ${langName} ONLY\n\n` +
+              `Remember: Code identifiers = English always. All explanation text = ${langName} only.`
             : '';
         switch (action) {
             case AIAction.ANALYZE_CODE:
@@ -94,7 +98,7 @@ export class PromptService {
      */
     static getLanguageName(code: string): string {
         const map: Record<string, string> = {
-            hi: 'Hindi', bho: 'Bhojpuri', hne: 'Haryanvi',
+            hi: 'Hindi', hne: 'Haryanvi',
             bn: 'Bengali', te: 'Telugu', mr: 'Marathi',
             ta: 'Tamil', gu: 'Gujarati', kn: 'Kannada', ml: 'Malayalam',
             pa: 'Punjabi', or: 'Odia', en: 'English'

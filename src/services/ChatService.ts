@@ -1,4 +1,4 @@
-import * as vscode from 'vscode';
+﻿import * as vscode from 'vscode';
 import { AIService } from './AIService';
 import { AIRequest } from '../providers/AIProvider';
 import { SelectionInfo, SelectionService } from './SelectionService';
@@ -241,14 +241,14 @@ export class ChatService {
      * language, and that the attached conversation is authoritative.
      */
     private buildSystemPrompt(targetLanguage?: string): string {
+        const lines: string[] = [];
         const langMap: Record<string, string> = {
-            hi: 'Hindi (हिन्दी)', bho: 'Bhojpuri (भोजपुरी)', hne: 'Haryanvi (हरियाणवी)',
+            hi: 'Hindi (हिन्दी)', hne: 'Haryanvi (हरियाणवी)',
             bn: 'Bengali (বাংলা)', te: 'Telugu (తెలుగు)',
-            mr: 'Marathi (मराठी)', ta: 'Tamil (தமிழ்)', gu: 'Gujarati (ગુજરાતી)',
+            mr: 'Marathi (मराठी)', ta: 'Tamil (தமிழ்)', gu: 'Gujarati (ગુજรાতী)',
             kn: 'Kannada (ಕನ್ನಡ)', ml: 'Malayalam (മലയാളം)', pa: 'Punjabi (ਪੰਜਾਬੀ)',
             or: 'Odia (ଓଡ଼ିଆ)', en: 'English'
         };
-        const lines: string[] = [];
         lines.push('You are an AI coding assistant embedded inside VS Code.');
         lines.push('Answer concisely, use markdown for formatting, and include code examples when helpful.');
         if (this.conversation?.codeContext) {
@@ -267,20 +267,25 @@ export class ChatService {
             lines.push('All user questions in this conversation refer to the selected code above unless they explicitly reference something else.');
             lines.push('Do NOT invent file contents. If the user asks about code not shown above, ask them to select it first.');
             if (targetLanguage && targetLanguage !== 'en') {
+                const langDisplayName = langMap[targetLanguage] || targetLanguage;
                 lines.push('');
-                lines.push('=== CRITICAL LANGUAGE INSTRUCTION - READ CAREFULLY ===');
-                lines.push(`1. Write ALL explanatory text in ${langMap[targetLanguage] || targetLanguage}.`);
+                lines.push('=== CRITICAL LANGUAGE INSTRUCTION - YOU MUST FOLLOW THIS ===');
+                lines.push(`You MUST write your ENTIRE response in ${langDisplayName} language.`);
+                lines.push(`Do NOT use Hindi. Do NOT use English for explanations. Use ONLY ${langDisplayName}.`);
+                lines.push(`TARGET LANGUAGE: ${langDisplayName}`);
+                lines.push(`RESPOND IN: ${langDisplayName} ONLY`);
+                lines.push('');
+                lines.push('Rules:');
+                lines.push(`1. Write ALL explanatory text, headings, bullet points in ${langDisplayName}.`);
                 lines.push('2. Keep ALL code identifiers in English - this includes:');
                 lines.push('   - Variable names: items, total, price, etc.');
                 lines.push('   - Function names: reduce, map, filter, etc.');
                 lines.push('   - Keywords: null, undefined, NaN, true, false');
                 lines.push('   - Class/Property names: Array, .length, .price');
                 lines.push('3. When mentioning code in explanations, wrap in backticks (`code`) and keep English.');
-                lines.push(`4. Do NOT translate inline code like \`items[i].price\` or \`Array.prototype.reduce\`.`);
-                lines.push(`5. Do NOT add ${langMap[targetLanguage] || targetLanguage} comments inside code blocks.`);
-                lines.push('');
-                lines.push(`CORRECT: "यह \`items\` array को iterate करता है।"`);
-                lines.push(`WRONG: "यह आइटम्स array को iterate करता है।" (DON'T DO THIS!)`);
+                lines.push('4. Do NOT translate inline code identifiers.');
+                lines.push(`5. Do NOT add ${langDisplayName} comments inside code blocks.`);
+                lines.push(`6. Do NOT respond in Hindi unless the selected language IS Hindi.`);
             } else {
                 lines.push('Keep code blocks and identifiers exactly as shown — do not modify code unless explicitly asked.');
             }

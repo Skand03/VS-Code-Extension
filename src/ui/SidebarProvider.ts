@@ -83,7 +83,6 @@ interface SidebarState {
 const UI_LANGUAGES: ReadonlyArray<{ code: string; name: string; native: string }> = [
     { code: 'en', name: 'English',    native: 'English' },
     { code: 'hi', name: 'Hindi',      native: 'हिन्दी' },
-    { code: 'bho', name: 'Bhojpuri',   native: '\u092d\u094b\u091c\u092a\u0941\u0930\u0940' },
     { code: 'hne', name: 'Haryanvi',   native: '\u0939\u0930\u093f\u092f\u093e\u0923\u0935\u0940' },
     { code: 'bn', name: 'Bengali',    native: 'বাংলা' },
     { code: 'te', name: 'Telugu',     native: 'తెలుగు' },
@@ -1755,7 +1754,6 @@ ${this.buildBodyHtml(state, langCode)}
     var ttsOn = false;
     var isLight = false;
 
-    const LANG_VOICE = { hi:'hi-IN', bho:'hi-IN', hne:'hi-IN', bn:'bn-IN', te:'te-IN', mr:'mr-IN', ta:'ta-IN', gu:'gu-IN', kn:'kn-IN', ml:'ml-IN', pa:'pa-IN', or:'or-IN', en:'en-US' };
 
     function openSettings() {
         vscode.postMessage({ command: 'openSettings' });
@@ -1823,7 +1821,6 @@ ${this.buildBodyHtml(state, langCode)}
             if (!bestVoice) {
                 var langNames = {
                     'hi': ['hindi', 'heera', 'hemant'],
-                    'bho': ['bhojpuri', 'hindi', 'heera', 'hemant'],
                     'hne': ['haryanvi', 'hindi', 'heera', 'hemant'],
                     'gu': ['gujarati'],
                     'mr': ['marathi', 'kalpana'],
@@ -1967,7 +1964,6 @@ ${this.buildBodyHtml(state, langCode)}
         const LANGS = [
             { code:'en', flag:'🇬🇧', name:'English' },
             { code:'hi', flag:'🇮🇳', name:'Hindi (हिन्दी)' },
-            { code:'bho', flag:'🇮🇳', name:'Bhojpuri (भोजपुरी)' },
             { code:'hne', flag:'🇮🇳', name:'Haryanvi (हरियाणवी)' },
             { code:'bn', flag:'🇮🇳', name:'Bengali (বাংলা)' },
             { code:'te', flag:'🇮🇳', name:'Telugu (తెలుగు)' },
