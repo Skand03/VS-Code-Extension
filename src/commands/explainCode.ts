@@ -33,8 +33,11 @@ export async function explainCodeCommand(
 
         sidebarProvider.showLoading(actionName, selection, currentProvider.displayName, currentModel);
 
-        const prompt = PromptService.generatePrompt(AIAction.EXPLAIN_CODE, selection, undefined, sidebarProvider.getUiLanguage());
-        logger.debug('Prompt generated for Explain Code');
+        const uiLang = sidebarProvider.getUiLanguage();
+        const resolvedLangName = PromptService.getLanguageName(uiLang);
+        logger.info(`[LANG DIAG] explainCode | uiLang='${uiLang}' | resolvedName='${resolvedLangName}' | provider=${providerName} | model=${currentModel || '(default)'}`);
+        const prompt = PromptService.generatePrompt(AIAction.EXPLAIN_CODE, selection, undefined, uiLang);
+        logger.info(`[LANG DIAG] explainCode | promptTail=${JSON.stringify(prompt.slice(-300))}`);
 
         const response = await aiService.generate({
             prompt,

@@ -33,8 +33,10 @@ export async function createFollowupCommand(
 
         sidebarProvider.showLoading(actionName, selection, currentProvider.displayName, currentModel);
 
-        const prompt = PromptService.generatePrompt(AIAction.CREATE_FOLLOWUP, selection, undefined, sidebarProvider.getUiLanguage());
-        logger.debug('Prompt generated for Create Follow-up');
+        const uiLang = sidebarProvider.getUiLanguage();
+        logger.info('[LANG DIAG] createFollowup | uiLang=' + JSON.stringify(uiLang) + ' | resolvedName=' + PromptService.getLanguageName(uiLang) + ' | provider=' + providerName + ' | model=' + (currentModel || '(default)'));
+        const prompt = PromptService.generatePrompt(AIAction.CREATE_FOLLOWUP, selection, undefined, uiLang);
+        logger.info('[LANG DIAG] createFollowup | promptTail=' + JSON.stringify(prompt.slice(-300)));
 
         const response = await aiService.generate({
             prompt,

@@ -33,8 +33,10 @@ export async function debugAndFixCommand(
 
         sidebarProvider.showLoading(actionName, selection, currentProvider.displayName, currentModel);
 
-        const prompt = PromptService.generatePrompt(AIAction.DEBUG_AND_FIX, selection, undefined, sidebarProvider.getUiLanguage());
-        logger.debug('Prompt generated for Debug & Fix');
+        const uiLang = sidebarProvider.getUiLanguage();
+        logger.info('[LANG DIAG] debugAndFix | uiLang=' + JSON.stringify(uiLang) + ' | resolvedName=' + PromptService.getLanguageName(uiLang) + ' | provider=' + providerName + ' | model=' + (currentModel || '(default)'));
+        const prompt = PromptService.generatePrompt(AIAction.DEBUG_AND_FIX, selection, undefined, uiLang);
+        logger.info('[LANG DIAG] debugAndFix | promptTail=' + JSON.stringify(prompt.slice(-300)));
 
         const response = await aiService.generate({
             prompt,

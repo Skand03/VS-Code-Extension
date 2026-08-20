@@ -41,6 +41,12 @@ export class PromptService {
         const langName = targetLanguage && targetLanguage !== 'en'
             ? PromptService.getLanguageName(targetLanguage)
             : '';
+        // Log exactly what language was resolved — catches any fallback to 'English'
+        if (targetLanguage && targetLanguage !== 'en') {
+            const resolvedFromMap = PromptService.getLanguageName(targetLanguage);
+            const isKnownLang = resolvedFromMap !== 'English';
+            console.log(`[LANG DIAG] PromptService.generatePrompt | action=${action} | targetLanguage='${targetLanguage}' | resolvedName='${resolvedFromMap}' | isKnownLang=${isKnownLang}`);
+        }
         const langDirective = targetLanguage && targetLanguage !== 'en'
             ? `\n\n---\n**CRITICAL LANGUAGE INSTRUCTION - YOU MUST FOLLOW THIS:**\n\n` +
               `You MUST write your ENTIRE response in ${langName} language.\n` +

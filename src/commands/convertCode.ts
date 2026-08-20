@@ -46,8 +46,11 @@ export async function convertCodeCommand(
 
         sidebarProvider.showLoading(actionName, selection, currentProvider.displayName, currentModel);
 
-        const prompt = PromptService.generatePrompt(AIAction.CONVERT_CODE, selection, targetLanguage);
-        logger.debug('Prompt generated for Convert Code');
+        const uiLang = sidebarProvider.getUiLanguage();
+        const resolvedLangName = PromptService.getLanguageName(uiLang);
+        logger.info(`[LANG DIAG] convertCode | uiLang='${uiLang}' | resolvedName='${resolvedLangName}' | provider=${providerName} | model=${currentModel || '(default)'}`);
+        const prompt = PromptService.generatePrompt(AIAction.CONVERT_CODE, selection, targetLanguage, uiLang);
+        logger.info(`[LANG DIAG] convertCode | promptTail=${JSON.stringify(prompt.slice(-300))}`);
 
         const response = await aiService.generate({
             prompt,

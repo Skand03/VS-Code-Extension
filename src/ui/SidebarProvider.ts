@@ -119,7 +119,10 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     private _translating: boolean = false;
 
     /** Returns the user's currently selected UI language code (e.g. 'hi', 'en') */
-    public getUiLanguage(): string { return this.currentUiLanguage; }
+    public getUiLanguage(): string {
+        logger.info(`[LANG DIAG] getUiLanguage() called | returning='${this.currentUiLanguage}'`);
+        return this.currentUiLanguage;
+    }
 
     // ---- Chat Discussion (Phase 2) ----
     private chatService: ChatService | undefined;
@@ -232,6 +235,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                     logger.info('[UI DIAG] setUiLanguage ignored — translation already in flight');
                     break;
                 }
+                logger.info(`[LANG DIAG] setUiLanguage received | code='${code}' | previous='${this.currentUiLanguage}'`);
                 this.currentUiLanguage = code;
                 try {
                     // Persist FIRST so getUiLanguageConfig() returns the new value

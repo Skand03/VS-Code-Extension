@@ -44,8 +44,11 @@ export async function analyzeCodeCommand(
         sidebarProvider.showLoading(actionName, selection, currentProvider.displayName, currentModel);
 
         // Step 4: Generate the prompt
-        const prompt = PromptService.generatePrompt(AIAction.ANALYZE_CODE, selection, undefined, sidebarProvider.getUiLanguage());
-        logger.debug('Prompt generated for Analyze Code');
+        const uiLang = sidebarProvider.getUiLanguage();
+        const resolvedLangName = PromptService.getLanguageName(uiLang);
+        logger.info(`[LANG DIAG] analyzeCode | uiLang='${uiLang}' | resolvedName='${resolvedLangName}' | provider=${providerName} | model=${currentModel || '(default)'}`);
+        const prompt = PromptService.generatePrompt(AIAction.ANALYZE_CODE, selection, undefined, uiLang);
+        logger.info(`[LANG DIAG] analyzeCode | promptTail=${JSON.stringify(prompt.slice(-300))}`);
 
         // Step 5: Call the AI service (routes through GeminiProvider → Gemini API)
         const response = await aiService.generate({

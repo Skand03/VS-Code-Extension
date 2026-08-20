@@ -33,8 +33,10 @@ export async function factCheckCommand(
 
         sidebarProvider.showLoading(actionName, selection, currentProvider.displayName, currentModel);
 
-        const prompt = PromptService.generatePrompt(AIAction.FACT_CHECK, selection, undefined, sidebarProvider.getUiLanguage());
-        logger.debug('Prompt generated for Fact Check');
+        const uiLang = sidebarProvider.getUiLanguage();
+        logger.info('[LANG DIAG] factCheck | uiLang=' + JSON.stringify(uiLang) + ' | resolvedName=' + PromptService.getLanguageName(uiLang) + ' | provider=' + providerName + ' | model=' + (currentModel || '(default)'));
+        const prompt = PromptService.generatePrompt(AIAction.FACT_CHECK, selection, undefined, uiLang);
+        logger.info('[LANG DIAG] factCheck | promptTail=' + JSON.stringify(prompt.slice(-300)));
 
         const response = await aiService.generate({
             prompt,

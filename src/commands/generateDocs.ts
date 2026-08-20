@@ -33,8 +33,10 @@ export async function generateDocsCommand(
 
         sidebarProvider.showLoading(actionName, selection, currentProvider.displayName, currentModel);
 
-        const prompt = PromptService.generatePrompt(AIAction.GENERATE_DOCS, selection, undefined, sidebarProvider.getUiLanguage());
-        logger.debug('Prompt generated for Generate Documentation');
+        const uiLang = sidebarProvider.getUiLanguage();
+        logger.info('[LANG DIAG] generateDocs | uiLang=' + JSON.stringify(uiLang) + ' | resolvedName=' + PromptService.getLanguageName(uiLang) + ' | provider=' + providerName + ' | model=' + (currentModel || '(default)'));
+        const prompt = PromptService.generatePrompt(AIAction.GENERATE_DOCS, selection, undefined, uiLang);
+        logger.info('[LANG DIAG] generateDocs | promptTail=' + JSON.stringify(prompt.slice(-300)));
 
         const response = await aiService.generate({
             prompt,

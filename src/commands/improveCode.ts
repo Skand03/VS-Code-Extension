@@ -33,8 +33,10 @@ export async function improveCodeCommand(
 
         sidebarProvider.showLoading(actionName, selection, currentProvider.displayName, currentModel);
 
-        const prompt = PromptService.generatePrompt(AIAction.IMPROVE_CODE, selection, undefined, sidebarProvider.getUiLanguage());
-        logger.debug('Prompt generated for Improve Code');
+        const uiLang = sidebarProvider.getUiLanguage();
+        logger.info('[LANG DIAG] improveCode | uiLang=' + JSON.stringify(uiLang) + ' | resolvedName=' + PromptService.getLanguageName(uiLang) + ' | provider=' + providerName + ' | model=' + (currentModel || '(default)'));
+        const prompt = PromptService.generatePrompt(AIAction.IMPROVE_CODE, selection, undefined, uiLang);
+        logger.info('[LANG DIAG] improveCode | promptTail=' + JSON.stringify(prompt.slice(-300)));
 
         const response = await aiService.generate({
             prompt,
