@@ -94,7 +94,8 @@ export class PromptService {
      */
     static getLanguageName(code: string): string {
         const map: Record<string, string> = {
-            hi: 'Hindi', bn: 'Bengali', te: 'Telugu', mr: 'Marathi',
+            hi: 'Hindi', bho: 'Bhojpuri', hne: 'Haryanvi',
+            bn: 'Bengali', te: 'Telugu', mr: 'Marathi',
             ta: 'Tamil', gu: 'Gujarati', kn: 'Kannada', ml: 'Malayalam',
             pa: 'Punjabi', or: 'Odia', en: 'English'
         };

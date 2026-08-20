@@ -2,7 +2,7 @@
   "name": "ksd-ai",
   "displayName": "KSD AI",
   "description": "KSD AI — an AI coding assistant for VS Code with code analysis, chat, debugging, code conversion, documentation, testing, and multi-provider AI support.",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "publisher": "chaubeyji-ai",
   "icon": "resources/icon.png",
   "license": "MIT",
@@ -91,6 +91,8 @@
           "enum": [
             "en",
             "hi",
+            "bho",
+            "hne",
             "bn",
             "te",
             "mr",
@@ -104,6 +106,8 @@
           "enumDescriptions": [
             "English",
             "Hindi",
+            "Bhojpuri",
+            "Haryanvi",
             "Bengali",
             "Telugu",
             "Marathi",

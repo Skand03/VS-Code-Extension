@@ -242,7 +242,8 @@ export class ChatService {
      */
     private buildSystemPrompt(targetLanguage?: string): string {
         const langMap: Record<string, string> = {
-            hi: 'Hindi (हिन्दी)', bn: 'Bengali (বাংলা)', te: 'Telugu (తెలుగు)',
+            hi: 'Hindi (हिन्दी)', bho: 'Bhojpuri (भोजपुरी)', hne: 'Haryanvi (हरियाणवी)',
+            bn: 'Bengali (বাংলা)', te: 'Telugu (తెలుగు)',
             mr: 'Marathi (मराठी)', ta: 'Tamil (தமிழ்)', gu: 'Gujarati (ગુજરાતી)',
             kn: 'Kannada (ಕನ್ನಡ)', ml: 'Malayalam (മലയാളം)', pa: 'Punjabi (ਪੰਜਾਬੀ)',
             or: 'Odia (ଓଡ଼ିଆ)', en: 'English'
